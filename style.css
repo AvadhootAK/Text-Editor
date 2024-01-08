@@ -1,0 +1,115 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 1.125rem;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.heading {
+    width: 100%;
+    text-align: center;
+    background-color: #fcc419;
+    padding: 1rem 0;
+}
+
+.main-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sidebar {
+    border: 1px solid;
+    padding: 1rem 1rem;
+    position: sticky;
+    left: 0;
+    top: 0;
+    margin: 1.25rem 1rem;
+    border-radius: 15px;
+    height: 25rem;
+    overflow-y: auto;
+    width: 25%;
+}
+
+.sidebar h3 {
+    margin-bottom: 15px;
+}
+
+.saved-message {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.editing-area {
+    width: 100%;
+    margin: 1.25rem 1rem;
+    padding: 0 2.5rem;
+}
+
+.editing-area textarea {
+    width: 100%;
+    resize: none;
+    padding: 0.5rem 0.5rem;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-container {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row-reverse;
+}
+
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    border: none;
+    background-color: #f08c00;
+    border-radius: 10px;
+    transition: all .35s ease-in-out;
+}
+
+.btn:hover {
+    background-color: #f08c00da;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.italic {
+    font-style: italic;
+}
+
+#emojiContainer button {
+    margin: 0 0.25rem;
+    background-color: transparent;
+    border: 1px solid black;
+    font-size: 21px;
+}
+
+.btn-l {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
