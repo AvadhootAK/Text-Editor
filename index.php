@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
     <title>Emoji Composer</title>
+    
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
 </head>
 <body>
     <header class="heading">
@@ -24,31 +30,17 @@
                      <?php include_once("getdata.php"); ?>
                 </div>
             </div>
-            <div class="editing-area">
-            <div class="container">
-        <div id="message-container">
-            <form action="insert.php" method="post">
-                <textarea cols="10" rows="10" id="message-input" name="message-input" placeholder="Type your message..."></textarea>
-                <div class="btn-container">
-                    <div>
-                        <button id="send-button" class="btn" type="submit">Save</button>
-                        
-                    </div>
-                    <div class="btn-l">
-
-                        <button class="btn" id="btnBold" type="button" onClick="handleInput()"><b>B</b></button>
-                        <button class="btn" id="btnItalic" type="button" onClick="italic()"><i>I</i></button>
-                        <div id="emojiContainer"></div>
-                        <div class="search-results" id="search-results"></div>
-                    </div>
+            <div class="edit">
+                <div id="editor"></div>
+                <div class="btn-grp">
+                    <button class="btn" id="send-button" onclick="sendMessage()">Save</button>
+                    <button class="btn" onclick="copyFormattedText('whatsapp')">Copy for Whatsapp</button>
+                    <button class="btn" onclick="copyFormattedText('telegram')">Copy for Telegram</button>
                 </div>
-            </form> 
-        </div>
-
+                <div id="emojiContainer"></div>
             </div>
         </div>
         <script src="script.js"></script>
     </main>
-    
 </body>
 </html>

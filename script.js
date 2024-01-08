@@ -1,17 +1,22 @@
-const messageInput = document.getElementById('message-input');
 const saveButton = document.getElementById('send-button');
 const emojiContainer = document.getElementById('emojiContainer');
 const displayArea = document.getElementById('display-area');
 const boldBtn = document.getElementById('btnBold');
 const italicBtn = document.getElementById('btnItalic');
-const searchBtn= document.getElementById('search')
+const searchBtn = document.getElementById('search')
 
-const emojis = ['😊', '😍', '🥳', '🎉', '👍', '🙌','🚩'];
+const quill = new Quill('#editor', {
+    theme: 'snow',
+});
+
+const messageInput = quill.getText();
+
+const emojis = ['😊', '😍', '🥳', '🎉', '👍', '🙌', '🚩'];
 
 emojis.forEach(emoji => {
     const emojiButton = document.createElement('button');
     emojiButton.innerHTML = emoji;
-    emojiButton.addEventListener('click', () => insertEmoji(emoji));
+    emojiButton.addEventListener('click', () => loadEmoji(emoji));
     emojiButton.classList.add('btn');
     emojiContainer.appendChild(emojiButton);
 });
@@ -24,45 +29,112 @@ function italic() {
     messageInput.classList.toggle('italic')
 }
 
-messageInput.addEventListener('input', handleInput);
+// messageInput.addEventListener('input', handleInput);
 
-function handleInput() {
-    const selectionStart = messageInput.selectionStart;
-    const selectionEnd = messageInput.selectionEnd;
-    const inputValue = messageInput.value;
+saveButton.addEventListener('click', sendMessage());
 
-    const prefix = '*';
-    const suffix = '*';
+function loadEmoji(emoji) {
+    var cursorPosition = quill.getSelection(true).index;
+    quill.insertText(cursorPosition, emoji);
+    quill.focus();
+}
 
-    if (selectionStart !== selectionEnd) {
-        const selectedText = inputValue.substring(selectionStart, selectionEnd);
-        const formattedText = `${prefix}${selectedText}${suffix}`;
-        const newText = inputValue.substring(0, selectionStart) + formattedText + inputValue.substring(selectionEnd);
+function getEditorContent() {
+    var content = quill.root.innerHTML;
+    console.log(content);
+}
 
-        messageInput.value = newText;
-        messageInput.setSelectionRange(selectionStart + prefix.length, selectionEnd + prefix.length);
+function copyFormattedText(choice) {
+    var content = quill.getText()
+    switch (choice) {
+        case 'whatsapp':
+            var formattedText = formatText(content, 'whatsapp');
+            break;
+
+        case 'telegram':
+            var formattedText = formatText(content, 'telegram');
+            break;
     }
+    copyToClipboard(formattedText);
 }
 
-saveButton.addEventListener('click', sendMessage);
+function formatText(text, app) {
+    var delta = quill.getContents();
 
-function sendMessage() {
-    const editedMessage = messageInput.value;
+    switch (app) {
+        case 'whatsapp':
+            var formattedText = delta.ops.reduce(function (result, op, index, ops) {
+                var insert = op.insert;
+                var nextOp = ops[index + 1];
 
+                if (op.attributes) {
+                    if (op.attributes.bold) {
+                        insert = '*' + insert + '*';
+                        if (nextOp && nextOp.attributes && nextOp.attributes.bold) {
+                            insert += ' ';
+                        }
+                    }
+                    if (op.attributes.italic) {
+                        insert = '_' + insert + '_';
+                        if (nextOp && nextOp.attributes && nextOp.attributes.italic) {
+                            insert += ' ';
+                        }
+                    }
+                }
+                return result + insert;
+            }, '');
+            break;
+
+        case 'telegram':
+            var formattedText = delta.ops.reduce(function (result, op, index, ops) {
+                var insert = op.insert;
+                var nextOp = ops[index + 1];
+                if (op.attributes) {
+                    if (op.attributes.bold) {
+                        insert = '**' + insert + '**';
+                        if (nextOp && nextOp.attributes && nextOp.attributes.bold) {
+                            insert += ' ';
+                        }
+                    }
+                    if (op.attributes.italic) {
+                        insert = '__' + insert + '__';
+                        if (nextOp && nextOp.attributes && nextOp.attributes.italic) {
+                            insert += ' ';
+                        }
+                    }
+                }
+                return result + insert;
+            }, '');
+            break;
+    }
+
+    return formattedText;
 }
 
-function insertEmoji(emoji) {
-    messageInput.value += emoji;
+
+
+function copyToClipboard(text) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    console.log('Text copied to clipboard:', text);
 }
+
 document.addEventListener('DOMContentLoaded', function () {
     const campaignMessages = document.querySelectorAll('.campaign-message');
     const messageInput = document.getElementById('message-input');
 
     campaignMessages.forEach(message => {
-        message.addEventListener('click', () => loadMessage(message));    
+        message.addEventListener('click', () => loadMessage(message));
     });
 })
 
+function saveToMySQL() {
+
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     const savedMessages = document.querySelectorAll('.saved-message');
@@ -74,14 +146,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadMessage(messageElement) {
         const messageId = messageElement.dataset.messageId;
         const messageContent = messageElement.innerText;
-         
+
         messageInput.value = messageContent;
         messageInput.dataset.messageId = messageId;
     }
     document.addEventListener('DOMContentLoaded', function () {
         const savedMessages = document.getElementById('msg-list');
         const messageInput = document.getElementById('message-input');
-    
+
         function loadMessages() {
             const xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
@@ -101,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
             xhr.open('GET', 'getdata.php', true);
             xhr.send();
         }
-    
+
         function displayMessages(messages) {
             savedMessages.innerHTML = ''; // Clear existing messages
             messages.forEach(message => {
@@ -112,14 +184,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 savedMessages.appendChild(messageElement);
             });
         }
-    
+
         loadMessages(); // Load messages when the page loads
-    
+
         // ... rest of your existing code ...
     });
-    
-        
-    
 
     function sendMessage() {
         const editedMessage = messageInput.value;
@@ -140,29 +209,26 @@ document.addEventListener('DOMContentLoaded', function () {
             };
             xhrUpdate.send('message-id=' + encodeURIComponent(messageId) + '&edited-message=' + encodeURIComponent(editedMessage));
         } else {
-            
-            const xhrInsert = new XMLHttpRequest();
-            xhrInsert.open('POST', 'insert.php', true);
-            xhrInsert.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhrInsert.onreadystatechange = function () {
-                if (xhrInsert.readyState === XMLHttpRequest.DONE) {
-                    if (xhrInsert.status === 200) {
-                        console.log('Message saved successfully');
-                    } else {
-                        console.error('Failed to save message');
-                    }
+            var content = quill.getText();
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "insert.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    console.log(xhr.responseText);
                 }
             };
-            xhrInsert.send('message-input=' + encodeURIComponent(editedMessage));
+            xhr.send("content=" + encodeURIComponent(content));
         }
 
-        
+
         messageInput.dataset.messageId = '';
         messageInput.value = '';
     }
     const saveButton = document.getElementById('send-button');
     saveButton.addEventListener('click', (event) => {
-        event.preventDefault(); 
+        event.preventDefault();
         sendMessage();
     });
     const emojiButtons = document.querySelectorAll('.btn');
@@ -172,32 +238,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 })
-function sendMessage() {
+
+/*function sendMessage() {
     const editedMessage = messageInput.value;
     const messageId = messageInput.dataset.messageId;
 
-    const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                console.log('Operation successful');
-                loadMessages(); // Reload messages after successful operation
-            } else {
-                console.error('Failed operation');
-            }
-        }
-    };
+     const xhr = new XMLHttpRequest();
+     xhr.onreadystatechange = function () {
+         if (xhr.readyState === XMLHttpRequest.DONE) {
+             if (xhr.status === 200) {
+                 console.log('Operation successful');
+                 loadMessages(); // Reload messages after successful operation
+             } else {
+                 console.error('Failed operation');
+             }
+         }
+     };
 
-    if (messageId) {
-        xhr.open('POST', 'update.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send('message-id=' + encodeURIComponent(messageId) + '&edited-message=' + encodeURIComponent(editedMessage));
-    } else {
-        xhr.open('POST', 'insert.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send('message-input=' + encodeURIComponent(editedMessage));
-    }
+     if (messageId) {
+         xhr.open('POST', 'update.php', true);
+         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+         xhr.send('message-id=' + encodeURIComponent(messageId) + '&edited-message=' + encodeURIComponent(editedMessage));
+     } else {
+         xhr.open('POST', 'insert.php', true);
+         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+         xhr.send('message-input=' + encodeURIComponent(editedMessage));
+     }
 
-    messageInput.dataset.messageId = '';
-    messageInput.value = '';
-}
+     messageInput.dataset.messageId = '';
+     messageInput.value = '';
+ }*/

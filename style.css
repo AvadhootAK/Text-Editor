@@ -113,3 +113,7 @@ a:hover {
     gap: 8px;
     align-items: center;
 }
+.edit {
+    width: 100%;
+    padding: 1rem 1rem;
+}

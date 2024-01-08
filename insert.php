@@ -6,7 +6,7 @@ $database = "messages";
 
 $conn = new mysqli($hostname, $username, $password, $database);
 
-$message = $_POST['message-input'];
+$message = $_POST['content'];
 
 if ($conn->connect_error) { 
     die("Failed". $conn->connect_error);
