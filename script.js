@@ -21,18 +21,6 @@ emojis.forEach(emoji => {
     emojiContainer.appendChild(emojiButton);
 });
 
-function bold() {
-    messageInput.classList.toggle('bold')
-}
-
-function italic() {
-    messageInput.classList.toggle('italic')
-}
-
-// messageInput.addEventListener('input', handleInput);
-
-saveButton.addEventListener('click', sendMessage());
-
 function loadEmoji(emoji) {
     var cursorPosition = quill.getSelection(true).index;
     quill.insertText(cursorPosition, emoji);
@@ -111,8 +99,6 @@ function formatText(text, app) {
     return formattedText;
 }
 
-
-
 function copyToClipboard(text) {
     var textarea = document.createElement('textarea');
     textarea.value = text;
@@ -123,148 +109,66 @@ function copyToClipboard(text) {
     console.log('Text copied to clipboard:', text);
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    const campaignMessages = document.querySelectorAll('.campaign-message');
-    const messageInput = document.getElementById('message-input');
+saveButton.addEventListener('click', (event) => {
+    event.preventDefault();
+});
 
-    campaignMessages.forEach(message => {
-        message.addEventListener('click', () => loadMessage(message));
+const emojiButtons = document.querySelectorAll('.btn');
+emojiButtons.forEach(emojiButton => {
+    emojiButton.addEventListener('click', function (event) {
+        event.preventDefault();
     });
-})
+});
 
-function saveToMySQL() {
 
+//NEW CODE INSERTED
+function saveMessage() {
+    var content = quill.getText();
+
+    fetch('insert.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: content }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateSidebar();
+            } else {
+                console.error('Error saving message:', data.error);
+            }
+        })
+        .catch(error => console.error('Error saving message:', error));
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    const savedMessages = document.querySelectorAll('.saved-message');
+function updateSidebar() {
+    fetch('getdata.php')
+        .then(response => response.json())
+        .then(data => {
+            var messageList = document.getElementById('msg-list');
+            messageList.innerHTML = '';
 
-    savedMessages.forEach(message => {
-        message.addEventListener('click', () => loadMessage(message));
-    });
-
-    function loadMessage(messageElement) {
-        const messageId = messageElement.dataset.messageId;
-        const messageContent = messageElement.innerText;
-
-        messageInput.value = messageContent;
-        messageInput.dataset.messageId = messageId;
-    }
-    document.addEventListener('DOMContentLoaded', function () {
-        const savedMessages = document.getElementById('msg-list');
-        const messageInput = document.getElementById('message-input');
-
-        function loadMessages() {
-            const xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.messages) {
-                            displayMessages(response.messages);
-                        } else {
-                            console.error(response.error);
-                        }
-                    } else {
-                        console.error('Failed to fetch messages');
-                    }
-                }
-            };
-            xhr.open('GET', 'getdata.php', true);
-            xhr.send();
-        }
-
-        function displayMessages(messages) {
-            savedMessages.innerHTML = ''; // Clear existing messages
-            messages.forEach(message => {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('saved-message');
-                messageElement.dataset.messageId = message.id;
-                messageElement.innerText = message.content;
-                savedMessages.appendChild(messageElement);
+            data.messages.forEach(message => {
+                var listItem = document.createElement('a');
+                listItem.textContent = message.content;
+                listItem.onclick = function () {
+                    loadMessage(message.id);
+                };
+                messageList.appendChild(listItem);
             });
-        }
+        })
+        .catch(error => console.error('Error fetching messages:', error));
+}
 
-        loadMessages(); // Load messages when the page loads
+function loadMessage(messageId) {
+    fetch('getMsg.php?id=' + messageId)
+        .then(response => response.json())
+        .then(data => {
+            quill.root.innerHTML = data.message.content;
+        })
+        .catch(error => console.error('Error fetching message:', error));
+}
 
-        // ... rest of your existing code ...
-    });
-
-    function sendMessage() {
-        const editedMessage = messageInput.value;
-        const messageId = messageInput.dataset.messageId;
-
-        if (messageId) {
-            const xhrUpdate = new XMLHttpRequest();
-            xhrUpdate.open('POST', 'update.php', true);
-            xhrUpdate.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhrUpdate.onreadystatechange = function () {
-                if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
-                    if (xhrUpdate.status === 200) {
-                        console.log('Message updated successfully');
-                    } else {
-                        console.error('Failed to update message');
-                    }
-                }
-            };
-            xhrUpdate.send('message-id=' + encodeURIComponent(messageId) + '&edited-message=' + encodeURIComponent(editedMessage));
-        } else {
-            var content = quill.getText();
-
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "insert.php", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    console.log(xhr.responseText);
-                }
-            };
-            xhr.send("content=" + encodeURIComponent(content));
-        }
-
-
-        messageInput.dataset.messageId = '';
-        messageInput.value = '';
-    }
-    const saveButton = document.getElementById('send-button');
-    saveButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        sendMessage();
-    });
-    const emojiButtons = document.querySelectorAll('.btn');
-    emojiButtons.forEach(emojiButton => {
-        emojiButton.addEventListener('click', function (event) {
-            event.preventDefault();
-        });
-    });
-})
-
-/*function sendMessage() {
-    const editedMessage = messageInput.value;
-    const messageId = messageInput.dataset.messageId;
-
-     const xhr = new XMLHttpRequest();
-     xhr.onreadystatechange = function () {
-         if (xhr.readyState === XMLHttpRequest.DONE) {
-             if (xhr.status === 200) {
-                 console.log('Operation successful');
-                 loadMessages(); // Reload messages after successful operation
-             } else {
-                 console.error('Failed operation');
-             }
-         }
-     };
-
-     if (messageId) {
-         xhr.open('POST', 'update.php', true);
-         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-         xhr.send('message-id=' + encodeURIComponent(messageId) + '&edited-message=' + encodeURIComponent(editedMessage));
-     } else {
-         xhr.open('POST', 'insert.php', true);
-         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-         xhr.send('message-input=' + encodeURIComponent(editedMessage));
-     }
-
-     messageInput.dataset.messageId = '';
-     messageInput.value = '';
- }*/
+updateSidebar();

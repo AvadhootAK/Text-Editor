@@ -27,25 +27,26 @@
     margin: 1.25rem 1rem;
     border-radius: 15px;
     height: 25rem;
+    overflow-x: hidden;
     overflow-y: auto;
-    width: 25%;
+    width: 30%;
 }
 
 .sidebar h3 {
     margin-bottom: 15px;
 }
 
-.saved-message {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-}
-
 .messages {
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+.messages > a {
+    white-space: nowrap; 
+    text-overflow: ellipsis;
+    cursor: pointer;
+    overflow: hidden;
 }
 
 a {

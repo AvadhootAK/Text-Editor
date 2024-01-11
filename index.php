@@ -22,18 +22,20 @@
             <div class="sidebar">
                 <h3>Campaign Messages</h3>
                 <form action="search.php" method="POST">
-                    <label for="search">Search:</label>
-                    <input type="text" id="search" name="search" required>
-                    <button type="submit" class="btn">Search</button>
+                    <div class="search-input">
+                        <input type="text" id="search" name="search" placeholder="Search Message" required>
+                    </div>
+                    <div class="search-btn">
+                        <button type="submit" class="btn">Search</button>
+                    </div>
                 </form>
                 <div class="messages" id="msg-list">
-                     <?php include_once("getdata.php"); ?>
                 </div>
             </div>
             <div class="edit">
                 <div id="editor"></div>
                 <div class="btn-grp">
-                    <button class="btn" id="send-button" onclick="sendMessage()">Save</button>
+                    <button class="btn" id="send-button" onclick="saveMessage()">Save</button>
                     <button class="btn" onclick="copyFormattedText('whatsapp')">Copy for Whatsapp</button>
                     <button class="btn" onclick="copyFormattedText('telegram')">Copy for Telegram</button>
                 </div>

@@ -1,23 +1,20 @@
 <?php
-$hostname = "localhost";
-$username = "root";
-$password = "";
-$database = "messages";
+  $mysqli = new mysqli("localhost", "root", "", "messages");
 
-$conn = new mysqli($hostname, $username, $password, $database);
+  if ($mysqli->connect_error) {
+      die("Connection failed: " . $mysqli->connect_error);
+  }
 
-$message = $_POST['content'];
+  $data = json_decode(file_get_contents('php://input'), true);
 
-if ($conn->connect_error) { 
-    die("Failed". $conn->connect_error);
-}
-$sql = "INSERT INTO messagesent (content) VALUES ('$message')";
+  $content = $mysqli->real_escape_string($data['content']);
+  $result = $mysqli->query("INSERT INTO messagesent (content) VALUES ('$content')");
 
-if($conn->query($sql) === TRUE) {
-    echo "Success";
-} else {
-    echo "Fail";
-}
+  if ($result) {
+      echo json_encode(['success' => true]);
+  } else {
+      echo json_encode(['success' => false, 'error' => $mysqli->error]);
+  }
 
-$conn->close();
+  $mysqli->close();
 ?>
