@@ -120,28 +120,82 @@ emojiButtons.forEach(emojiButton => {
     });
 });
 
-
-//NEW CODE INSERTED
 function saveMessage() {
-    var content = quill.getText();
+    const messageId = document.getElementById('message-id').value;
+    if (messageId) {
+        updateMessage();
+    } else {
+        var content = quill.getText();
 
-    fetch('insert.php', {
+        fetch('insert.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: content }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateSidebar();
+                } else {
+                    console.error('Error saving message:', data.error);
+                }
+            })
+            .catch(error => console.error('Error saving message:', error));
+    }
+}
+
+//  function saveMessage() {
+//     const messageId = document.getElementById('message-id').value;
+//     if (messageId) {
+//         updateMessage();
+//     } else {
+//         var content = quill.getText();
+
+//         fetch('insert.php', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/x-www-form-urlencoded',
+//             },
+//             body: 'content=' + encodeURIComponent(content),
+//         })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     updateSidebar();
+//                 } else {
+//                     console.error('Error saving message:', data.error);
+//                 }
+//             })
+//             .catch(error => console.error('Error saving message:', error));
+//     }
+// }
+
+
+function updateMessage() {
+    const messageId = document.getElementById('message-id').value;
+    const editedMessage = quill.getText();
+
+    fetch('update.php', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ content: content }),
+        body: `message_id=${messageId}&edited_message=${encodeURIComponent(editedMessage)}`,
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                console.log('Message updated successfully!');
                 updateSidebar();
             } else {
-                console.error('Error saving message:', data.error);
+                console.error('Error updating message:', data.error);
             }
         })
-        .catch(error => console.error('Error saving message:', error));
+        .catch(error => console.error('Error updating message:', error));
 }
+
 
 function updateSidebar() {
     fetch('getdata.php')
@@ -152,10 +206,12 @@ function updateSidebar() {
 
             data.messages.forEach(message => {
                 var listItem = document.createElement('a');
+                listItem.classList.add('messages');
                 listItem.textContent = message.content;
-                listItem.onclick = function () {
+                listItem.dataset.id = message.id;
+                listItem.addEventListener('click', function () {
                     loadMessage(message.id);
-                };
+                });
                 messageList.appendChild(listItem);
             });
         })
@@ -166,7 +222,12 @@ function loadMessage(messageId) {
     fetch('getMsg.php?id=' + messageId)
         .then(response => response.json())
         .then(data => {
-            quill.root.innerHTML = data.message.content;
+            if (data.message) {
+                document.getElementById('message-id').value = data.message.id;
+                quill.root.innerHTML = data.message.content;
+            } else {
+                console.error('Message not found:', data.message);
+            }
         })
         .catch(error => console.error('Error fetching message:', error));
 }

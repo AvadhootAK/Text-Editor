@@ -1,5 +1,11 @@
 <?php
-  $mysqli = new mysqli("localhost", "root", "", "messages");
+$hostname = "localhost";
+$username = "root";
+$password = "";
+$database = "messages";
+
+//$conn = new mysqli($hostname, $username, $password, $database);
+ $mysqli = new mysqli("localhost", "root", "", "messages");
 
   if ($mysqli->connect_error) {
       die("Connection failed: " . $mysqli->connect_error);
