@@ -1,34 +1,16 @@
 <?php
-  $mysqli = new mysqli("localhost", "root", "", "messages");
-
-  if ($mysqli->connect_error) {
-      die("Connection failed: " . $mysqli->connect_error);
-  }
-
-  $data = json_decode(file_get_contents('php://input'), true);
-
-  $content = $mysqli->real_escape_string($data['content']);
-  $result = $mysqli->query("INSERT INTO messagesent (content) VALUES ('$content')");
-
-  if ($result) {
-      echo json_encode(['success' => true]);
-  } else {
-      echo json_encode(['success' => false, 'error' => $mysqli->error]);
-  }
-
-  $mysqli->close();
- 
-
-/*$mysqli = new mysqli("localhost", "root", "", "messages");
+$mysqli = new mysqli("localhost", "root", "", "messages");
 
 if ($mysqli->connect_error) {
     die("Connection failed: " . $mysqli->connect_error);
 }
 
-$content = $_POST['content'];
+$boldText = $mysqli->real_escape_string($_POST['boldText']);
+$italicText = $mysqli->real_escape_string($_POST['italicText']);
+$normalText = $mysqli->real_escape_string($_POST['normalText']);
 
-// Sanitize the input before storing it in the database
-$content = $mysqli->real_escape_string($content);
+// Concatenate the texts to restructure the message
+$content = "<b>$boldText</b> <i>$italicText</i> $normalText";
 
 $result = $mysqli->query("INSERT INTO messagesent (content) VALUES ('$content')");
 
@@ -38,7 +20,5 @@ if ($result) {
     echo json_encode(['success' => false, 'error' => $mysqli->error]);
 }
 
-$mysqli->close();*/
+$mysqli->close();
 ?>
-
-

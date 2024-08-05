@@ -125,52 +125,56 @@ function saveMessage() {
     if (messageId) {
         updateMessage();
     } else {
-        var content = quill.getText();
+        var delta = quill.getContents();
 
-        fetch('insert.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ content: content }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    updateSidebar();
-                } else {
-                    console.error('Error saving message:', data.error);
-                }
-            })
-            .catch(error => console.error('Error saving message:', error));
+        // Extract bold, italic, and normal text
+        var boldText = '';
+        var italicText = '';
+        var normalText = '';
+
+        delta.ops.forEach(function (op) {
+            if (op.attributes && op.attributes.bold) {
+                boldText += op.insert;
+            } else if (op.attributes && op.attributes.italic) {
+                italicText += op.insert;
+            } else {
+                normalText += op.insert;
+            }
+        });
+
+        // Save the extracted texts individually
+        saveTexts(boldText, italicText, normalText);
     }
 }
 
-//  function saveMessage() {
-//     const messageId = document.getElementById('message-id').value;
-//     if (messageId) {
-//         updateMessage();
-//     } else {
-//         var content = quill.getText();
+function saveTexts(boldText, italicText, normalText) {
+    fetch('insert.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'boldText=' + encodeURIComponent(boldText) + '&italicText=' + encodeURIComponent(italicText) + '&normalText=' + encodeURIComponent(normalText),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            if (data.success) {
+                updateSidebar();
+            } else {
+                console.error('Error saving message:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
 
-//         fetch('insert.php', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/x-www-form-urlencoded',
-//             },
-//             body: 'content=' + encodeURIComponent(content),
-//         })
-//             .then(response => response.json())
-//             .then(data => {
-//                 if (data.success) {
-//                     updateSidebar();
-//                 } else {
-//                     console.error('Error saving message:', data.error);
-//                 }
-//             })
-//             .catch(error => console.error('Error saving message:', error));
-//     }
-// }
+
 
 
 function updateMessage() {
